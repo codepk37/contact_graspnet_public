@@ -5,7 +5,7 @@ import numpy as np
 import time
 import glob
 import cv2
-
+import open3d as o3d
 import tensorflow.compat.v1 as tf
 tf.disable_eager_execution()
 physical_devices = tf.config.experimental.list_physical_devices('GPU')
@@ -55,18 +55,32 @@ def inference(global_config, checkpoint_dir, input_paths, K=None, local_regions=
 
     # Process example test scenes
     for p in glob.glob(input_paths):
-        print('Loading ', p)
-
+        print('Loading -------------------------------------------\n\n\n\n---', p)
+        segmap, rgb, depth, pc_full, pc_colors = None, None, None, None, None
         pc_segments = {}
-        segmap, rgb, depth, cam_K, pc_full, pc_colors = load_available_input_data(p, K=K)
-        
-        if segmap is None and (local_regions or filter_grasps):
-            raise ValueError('Need segmentation map to extract local regions or filter grasps')
+        # segmap, rgb, depth, cam_K, pc_full, pc_colors = load_available_input_data(p, K=K)
 
-        if pc_full is None:
-            print('Converting depth to point cloud(s)...')
-            pc_full, pc_segments, pc_colors = grasp_estimator.extract_point_clouds(depth, cam_K, segmap=segmap, rgb=rgb,
-                                                                                    skip_border_objects=skip_border_objects, z_range=z_range)
+        pcd_path = p#f"./meancentered_pcd/{object_name}.pcd"
+
+        # Load the point cloud
+        pcd = o3d.io.read_point_cloud(pcd_path)
+        pc_full = np.asarray(pcd.points)
+
+        # Calculate min and max along x, y, z
+        min_values = pc_full.min(axis=0)
+        max_values = pc_full.max(axis=0)
+
+        # Print the results
+        print(f"Min values along x, y, z: {min_values}")
+        print(f"Max values along x, y, z: {max_values}")
+
+        # if segmap is None and (local_regions or filter_grasps):
+        #     raise ValueError('Need segmentation map to extract local regions or filter grasps')
+
+        # if pc_full is None:
+        #     print('Converting depth to point cloud(s)...')
+        #     pc_full, pc_segments, pc_colors = grasp_estimator.extract_point_clouds(depth, cam_K, segmap=segmap, rgb=rgb,
+                                                                                    # skip_border_objects=skip_border_objects, z_range=z_range)
 
         print('Generating Grasps...')
         pred_grasps_cam, scores, contact_pts, _ = grasp_estimator.predict_scene_grasps(sess, pc_full, pc_segments=pc_segments, 
@@ -77,7 +91,7 @@ def inference(global_config, checkpoint_dir, input_paths, K=None, local_regions=
                   pred_grasps_cam=pred_grasps_cam, scores=scores, contact_pts=contact_pts)
 
         # Visualize results          
-        show_image(rgb, segmap)
+        # show_image(rgb, segmap)
         visualize_grasps(pc_full, pred_grasps_cam, scores, plot_opencv_cam=True, pc_colors=pc_colors)
         
     if not glob.glob(input_paths):

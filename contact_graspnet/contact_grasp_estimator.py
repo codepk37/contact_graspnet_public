@@ -357,7 +357,7 @@ class GraspEstimator:
         # Convert to pc 
         pc_full, pc_colors = depth2pc(depth, K, rgb)
 
-        # Threshold distance
+        # Threshold distance ;By default its z_range=[0.2,1.8]
         if pc_colors is not None:
             pc_colors = pc_colors[(pc_full[:,2] < z_range[1]) & (pc_full[:,2] > z_range[0])] 
         pc_full = pc_full[(pc_full[:,2] < z_range[1]) & (pc_full[:,2] > z_range[0])]
