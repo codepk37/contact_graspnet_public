@@ -58,7 +58,7 @@ def inference(global_config, checkpoint_dir, input_paths, K=None, local_regions=
         print('Loading -------------------------------------------\n\n\n\n---', p)
         segmap, rgb, depth, pc_full, pc_colors = None, None, None, None, None
         pc_segments = {}
-        exit(0)
+        # exit(0)
         # segmap, rgb, depth, cam_K, pc_full, pc_colors = load_available_input_data(p, K=K)
 
         pcd_path = p#f"./meancentered_pcd/{object_name}.pcd"
