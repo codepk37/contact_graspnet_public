@@ -65,6 +65,9 @@ def show_image(rgb, segmap):
     plt.draw()
     plt.pause(0.001)
 
+
+
+
 def visualize_grasps(full_pc, pred_grasps_cam, scores, plot_opencv_cam=False, pc_colors=None, gripper_openings=None, gripper_width=0.08):
     """Visualizes colored point cloud and predicted grasps. If given, colors grasps by segmap regions. 
     Thick grasp is most confident per segment. For scene point cloud predictions, colors grasps according to confidence.
@@ -93,17 +96,62 @@ def visualize_grasps(full_pc, pred_grasps_cam, scores, plot_opencv_cam=False, pc
     
     if plot_opencv_cam:
         plot_coordinates(np.zeros(3,),np.eye(3,3))
+
+
+    # To store top 30 grasps, scores, and gripper openings
+    top_30_grasps_dict = {}
+    top_30_scores_dict = {}
+    top_30_openings_dict = {}
+
+
+
     for i,k in enumerate(pred_grasps_cam):
         if np.any(pred_grasps_cam[k]):
             gripper_openings_k = np.ones(len(pred_grasps_cam[k]))*gripper_width if gripper_openings is None else gripper_openings[k]
+            
+            # Sort scores and grasps to get the top 50
+            top_30_idx = np.argsort(scores[k])[-50:]  # Indices of the top 50 scores
+            top_30_grasps = pred_grasps_cam[k][top_30_idx]  # Select the top 30 grasps
+            top_30_openings = gripper_openings_k[top_30_idx]  # Corresponding gripper openings
+            top_30_scores = scores[k][top_30_idx]  # Corresponding top 30 scores
+            
+            # Store top 30 grasps, scores, and openings for each segment (or object)
+            top_30_grasps_dict[k] = top_30_grasps
+            top_30_scores_dict[k] = top_30_scores
+            top_30_openings_dict[k] = top_30_openings
+
+            # Optionally print for debugging
+            print(f"Top 30 scores for grasp {k}: {top_30_scores}")
+            print(f"Top 30 openings for grasp {k}: {top_30_openings}")
+            print(f"Top 30 grasps for grasp {k}: {top_30_grasps}")
+            print(f"Top len  is  ={len(top_30_grasps)}")
+
+
+
             if len(pred_grasps_cam) > 1:
-                draw_grasps(pred_grasps_cam[k], np.eye(4), color=colors[i], gripper_openings=gripper_openings_k)    
-                draw_grasps([pred_grasps_cam[k][np.argmax(scores[k])]], np.eye(4), color=colors2[k], 
-                            gripper_openings=[gripper_openings_k[np.argmax(scores[k])]], tube_radius=0.0025)    
+                # Visualize the top 3 grasps
+                draw_grasps(top_30_grasps, np.eye(4), color=colors[i], gripper_openings=top_30_openings)
+                draw_grasps([top_30_grasps[np.argmax(top_30_scores)]], np.eye(4), color=colors2[k],
+                            gripper_openings=[top_30_openings[np.argmax(top_30_scores)]], tube_radius=0.0025)
             else:
-                colors3 = [cm2(0.5*score)[:3] for score in scores[k]]
-                draw_grasps(pred_grasps_cam[k], np.eye(4), colors=colors3, gripper_openings=gripper_openings_k)    
+                colors3 = [cm2(0.5 * score)[:3] for score in top_30_scores]
+                draw_grasps(top_30_grasps, np.eye(4), colors=colors3, gripper_openings=top_30_openings)
+
+            # if len(pred_grasps_cam) > 1:
+            #     draw_grasps(pred_grasps_cam[k], np.eye(4), color=colors[i], gripper_openings=gripper_openings_k)    
+            #     draw_grasps([pred_grasps_cam[k][np.argmax(scores[k])]], np.eye(4), color=colors2[k], 
+            #                 gripper_openings=[gripper_openings_k[np.argmax(scores[k])]], tube_radius=0.0025)    
+            # else:
+            #     colors3 = [cm2(0.5*score)[:3] for score in scores[k]]
+            #     draw_grasps(pred_grasps_cam[k], np.eye(4), colors=colors3, gripper_openings=gripper_openings_k)    
     mlab.show()
+
+    # Return the top 30 grasps, scores, and openings for each segment (or object)
+    return top_30_grasps_dict, top_30_scores_dict, top_30_openings_dict
+
+
+
+
 
 def draw_pc_with_colors(pc, pc_colors=None, single_color=(0.3,0.3,0.3), mode='2dsquare', scale_factor=0.0018):
     """

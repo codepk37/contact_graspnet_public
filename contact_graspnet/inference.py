@@ -58,6 +58,7 @@ def inference(global_config, checkpoint_dir, input_paths, K=None, local_regions=
         print('Loading -------------------------------------------\n\n\n\n---', p)
         segmap, rgb, depth, pc_full, pc_colors = None, None, None, None, None
         pc_segments = {}
+        exit(0)
         # segmap, rgb, depth, cam_K, pc_full, pc_colors = load_available_input_data(p, K=K)
 
         pcd_path = p#f"./meancentered_pcd/{object_name}.pcd"
@@ -92,8 +93,25 @@ def inference(global_config, checkpoint_dir, input_paths, K=None, local_regions=
 
         # Visualize results          
         # show_image(rgb, segmap)
-        visualize_grasps(pc_full, pred_grasps_cam, scores, plot_opencv_cam=True, pc_colors=pc_colors)
+        top_30_grasps_dict, top_30_scores_dict, top_30_openings_dict= visualize_grasps(pc_full, pred_grasps_cam, scores, plot_opencv_cam=True, pc_colors=pc_colors)
         
+        
+        save_dir = './meancen_generated_grasps/'
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
+        # Define path for saving the .npz file
+        folder_name = os.path.basename(p)
+        folder_name = os.path.splitext(folder_name)[0]
+        save_path = os.path.join(save_dir, f'{folder_name}.npz')
+        print("savepath nae   - - -  ",save_path)
+        # Save the dictionaries into a .npz file
+        np.savez(save_path, 
+                top_30_grasps_dict=top_30_grasps_dict, 
+                top_30_scores_dict=top_30_scores_dict, 
+                top_30_openings_dict=top_30_openings_dict)
+        print(f"Grasp data saved to {save_path}")
+
+
     if not glob.glob(input_paths):
         print('No files found: ', input_paths)
         
