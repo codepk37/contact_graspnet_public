@@ -144,7 +144,7 @@ def visualize_grasps(full_pc, pred_grasps_cam, scores, plot_opencv_cam=False, pc
             # else:
             #     colors3 = [cm2(0.5*score)[:3] for score in scores[k]]
             #     draw_grasps(pred_grasps_cam[k], np.eye(4), colors=colors3, gripper_openings=gripper_openings_k)    
-    mlab.show()
+#    mlab.show()
 
     # Return the top 30 grasps, scores, and openings for each segment (or object)
     return top_30_grasps_dict, top_30_scores_dict, top_30_openings_dict
