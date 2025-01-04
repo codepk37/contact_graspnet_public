@@ -1,5 +1,5 @@
 # Directory containing .pcd files
-PCD_DIR=./meancentered_pcd
+PCD_DIR=./hpr_pcd
 
 # Python script path
 SCRIPT=python contact_graspnet/inference.py

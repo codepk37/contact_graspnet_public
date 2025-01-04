@@ -96,7 +96,7 @@ def inference(global_config, checkpoint_dir, input_paths, K=None, local_regions=
         top_30_grasps_dict, top_30_scores_dict, top_30_openings_dict= visualize_grasps(pc_full, pred_grasps_cam, scores, plot_opencv_cam=True, pc_colors=pc_colors)
         
         
-        save_dir = './meancen_generated_grasps/'
+        save_dir = './hpr_pcd_grasps/'
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
         # Define path for saving the .npz file

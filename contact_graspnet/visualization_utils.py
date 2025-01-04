@@ -109,8 +109,8 @@ def visualize_grasps(full_pc, pred_grasps_cam, scores, plot_opencv_cam=False, pc
         if np.any(pred_grasps_cam[k]):
             gripper_openings_k = np.ones(len(pred_grasps_cam[k]))*gripper_width if gripper_openings is None else gripper_openings[k]
             
-            # Sort scores and grasps to get the top 50
-            top_30_idx = np.argsort(scores[k])[-50:]  # Indices of the top 50 scores
+            # Sort scores and grasps to get the top 30
+            top_30_idx = np.argsort(scores[k])[-30:]  # Indices of the top 30 scores
             top_30_grasps = pred_grasps_cam[k][top_30_idx]  # Select the top 30 grasps
             top_30_openings = gripper_openings_k[top_30_idx]  # Corresponding gripper openings
             top_30_scores = scores[k][top_30_idx]  # Corresponding top 30 scores
@@ -144,7 +144,7 @@ def visualize_grasps(full_pc, pred_grasps_cam, scores, plot_opencv_cam=False, pc
             # else:
             #     colors3 = [cm2(0.5*score)[:3] for score in scores[k]]
             #     draw_grasps(pred_grasps_cam[k], np.eye(4), colors=colors3, gripper_openings=gripper_openings_k)    
-#    mlab.show()
+    mlab.show()
 
     # Return the top 30 grasps, scores, and openings for each segment (or object)
     return top_30_grasps_dict, top_30_scores_dict, top_30_openings_dict
